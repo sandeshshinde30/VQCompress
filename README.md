@@ -98,7 +98,7 @@ Optionally compute PSNR (Peak Signal-to-Noise Ratio) for quality assessment
 
 ### Project Demo
 #### Original Image
-https://ajile.ca/wp-content/uploads/gray-300x192.jpeg
+![Original](OriginalImage.png)
 
 #### Running compression code 
 ```bash
@@ -159,4 +159,4 @@ Compression successful. Data saved to Compressed.txt
 ```
 
 #### Decompressed image
-![Decompressed Image](./DecompressedImage.png)
+![Decompressed Image](DecompressedImage.png)
