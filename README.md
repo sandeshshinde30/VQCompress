@@ -98,7 +98,7 @@ Optionally compute PSNR (Peak Signal-to-Noise Ratio) for quality assessment
 
 ### Project Demo
 #### Original Image
-![Original](OriginalImage.png)
+![Original](Sandesh.png)
 
 #### Running compression code 
 ```bash
