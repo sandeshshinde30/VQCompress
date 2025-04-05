@@ -74,32 +74,30 @@ public class vectorQuantizationCompress {
         }
     }
 
-    // Initialize codebook depending on the quality selected
+    // Improved codebook initialization: sample tiles from across the entire image
     public void initializeCodebook() {
         codeBook = new int[codeBookSize][tileSize * tileSize];
-        int index = 0;
+        int totalTiles = tilesPerRow * tilesPerColumn;
+        int step = Math.max(1, totalTiles / codeBookSize);
+        int count = 0;
 
-        // High quality: directly pick actual tiles for codebook
-        if (qualityOption == 1) {
-            outer:
-            for (int row = 0; row < tilesPerRow; row++) {
-                for (int col = 0; col < tilesPerColumn; col++) {
-                    if (index >= codeBookSize) break outer;
-                    codeBook[index++] = tileGrid[row][col].clone();
+        for (int row = 0; row < tilesPerRow; row++) {
+            for (int col = 0; col < tilesPerColumn; col++) {
+                int flatIndex = row * tilesPerColumn + col;
+                if (flatIndex % step == 0 && count < codeBookSize) {
+                    codeBook[count++] = tileGrid[row][col].clone();
                 }
+                if (count >= codeBookSize) break;
             }
-        } else {
-            // Medium or low quality: average pairs of tiles
-            for (int row = 0; row < tilesPerRow - 1; row += 2) {
-                for (int col = 0; col < tilesPerColumn; col++) {
-                    if (index >= codeBookSize) break;
-                    for (int i = 0; i < tileSize * tileSize; i++) {
-                        codeBook[index][i] = (tileGrid[row][col][i] + tileGrid[row + 1][col][i]) / 2;
-                    }
-                    index++;
-                }
-            }
+            if (count >= codeBookSize) break;
         }
+
+        // Fill any remaining codebook vectors if image had fewer tiles
+        while (count < codeBookSize) {
+            codeBook[count++] = new int[tileSize * tileSize]; // blank tiles
+        }
+
+        System.out.println("Codebook initialized with " + count + " vectors.");
     }
 
     // Quantize the image using the closest codebook vector
