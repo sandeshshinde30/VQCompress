@@ -98,7 +98,7 @@ Optionally compute PSNR (Peak Signal-to-Noise Ratio) for quality assessment
 
 ### Project Demo
 #### Original Image
-![Original Image]https://ajile.ca/wp-content/uploads/gray-300x192.jpeg
+https://ajile.ca/wp-content/uploads/gray-300x192.jpeg
 
 #### Running compression code 
 ```bash
