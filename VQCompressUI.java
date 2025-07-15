@@ -12,7 +12,7 @@ public class VQCompressUI extends JFrame {
     private JComboBox<Integer> tileSizeBox;
     private JComboBox<String> qualityBox;
     private JButton compressButton;
-    private JButton decompressButton;
+    // private JButton decompressButton; // Remove decompress button
     private JTextArea statusArea;
     private JLabel imageLabel;
     private JLabel decompressedImageLabel;
@@ -52,6 +52,12 @@ public class VQCompressUI extends JFrame {
         tileSizeBox = new JComboBox<>(new Integer[]{1, 2, 4, 6, 8});
         gbc.gridx = 1;
         inputPanel.add(tileSizeBox, gbc);
+        // Add quality note
+        JLabel tileNote = new JLabel("(Smaller tile size = higher quality)");
+        tileNote.setFont(tileNote.getFont().deriveFont(Font.ITALIC, 11f));
+        tileNote.setForeground(Color.GRAY);
+        gbc.gridx = 2;
+        inputPanel.add(tileNote, gbc);
 
         // Quality
         gbc.gridx = 0; gbc.gridy = 2;
@@ -61,11 +67,11 @@ public class VQCompressUI extends JFrame {
         inputPanel.add(qualityBox, gbc);
 
         // Buttons
-        compressButton = new JButton("Compress");
-        decompressButton = new JButton("Decompress");
+        compressButton = new JButton("Compress & Show");
+        // decompressButton = new JButton("Decompress"); // Remove
         JPanel buttonPanel = new JPanel();
         buttonPanel.add(compressButton);
-        buttonPanel.add(decompressButton);
+        // buttonPanel.add(decompressButton); // Remove
 
         // Status area
         statusArea = new JTextArea(5, 40);
@@ -143,25 +149,13 @@ public class VQCompressUI extends JFrame {
                 compressor.initializeCodebook();
                 compressor.quantizeImage();
                 compressor.saveCompressedFile("Compressed.txt");
-                showStatus("Compression successful! Saved as Compressed.txt");
-                JOptionPane.showMessageDialog(this, "Compressed.txt stored at: " + new File("Compressed.txt").getAbsolutePath(), "Compression Complete", JOptionPane.INFORMATION_MESSAGE);
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                showStatus("Compression failed: " + ex.getMessage());
-            }
-        });
-
-        // Decompress action
-        decompressButton.addActionListener(e -> {
-            try {
+                // Immediately decompress and show the image
                 vectorQuantizationDecompress decompressor = new vectorQuantizationDecompress();
                 decompressor.loadCompressedData("Compressed.txt");
-                showStatus("Decompression successful! Saved as DecompressedImage.png");
-                String outPath = new File("DecompressedImage.png").getAbsolutePath();
-                JOptionPane.showMessageDialog(this, "Decompressed image stored at: " + outPath, "Decompression Complete", JOptionPane.INFORMATION_MESSAGE);
                 // Display decompressed image
+                String jpgPath = new java.io.File("DecompressedImage.jpg").getAbsolutePath();
                 try {
-                    decompressedImage = ImageIO.read(new File("DecompressedImage.png"));
+                    BufferedImage decompressedImage = javax.imageio.ImageIO.read(new java.io.File(jpgPath));
                     if (decompressedImage != null) {
                         decompressedImageLabel.setIcon(new ImageIcon(decompressedImage.getScaledInstance(300, 220, Image.SCALE_SMOOTH)));
                         decompressedImageLabel.setText("");
@@ -173,11 +167,41 @@ public class VQCompressUI extends JFrame {
                     decompressedImageLabel.setIcon(null);
                     decompressedImageLabel.setText("Cannot display image");
                 }
+                showStatus("Compression and decompression complete.");
+                JOptionPane.showMessageDialog(this, "Decompressed image stored at: " + jpgPath, "Decompression Complete", JOptionPane.INFORMATION_MESSAGE);
             } catch (Exception ex) {
                 ex.printStackTrace();
-                showStatus("Decompression failed: " + ex.getMessage());
+                showStatus("Compression/decompression failed: " + ex.getMessage());
             }
         });
+
+        // Decompress action
+        // decompressButton.addActionListener(e -> { // Remove
+        //     try { // Remove
+        //         vectorQuantizationDecompress decompressor = new vectorQuantizationDecompress(); // Remove
+        //         decompressor.loadCompressedData("Compressed.txt"); // Remove
+        //         showStatus("Decompression successful! Saved as DecompressedImage.png"); // Remove
+        //         String outPath = new File("DecompressedImage.png").getAbsolutePath(); // Remove
+        //         JOptionPane.showMessageDialog(this, "Decompressed image stored at: " + outPath, "Decompression Complete", JOptionPane.INFORMATION_MESSAGE); // Remove
+        //         // Display decompressed image // Remove
+        //         try { // Remove
+        //             decompressedImage = ImageIO.read(new File("DecompressedImage.png")); // Remove
+        //             if (decompressedImage != null) { // Remove
+        //                 decompressedImageLabel.setIcon(new ImageIcon(decompressedImage.getScaledInstance(300, 220, Image.SCALE_SMOOTH))); // Remove
+        //                 decompressedImageLabel.setText(""); // Remove
+        //             } else { // Remove
+        //                 decompressedImageLabel.setIcon(null); // Remove
+        //                 decompressedImageLabel.setText("Cannot display image"); // Remove
+        //             } // Remove
+        //         } catch (Exception ex) { // Remove
+        //             decompressedImageLabel.setIcon(null); // Remove
+        //             decompressedImageLabel.setText("Cannot display image"); // Remove
+        //         } // Remove
+        //     } catch (Exception ex) { // Remove
+        //         ex.printStackTrace(); // Remove
+        //         showStatus("Decompression failed: " + ex.getMessage()); // Remove
+        //     } // Remove
+        // }); // Remove
     }
 
     private void showStatus(String msg) {
