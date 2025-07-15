@@ -42,7 +42,7 @@ public class vectorQuantizationDecompress {
             System.out.println("Compressed data loaded successfully.");
             // Reconstruct and save the image
             BufferedImage img = reconstructImage(imageWidth, imageHeight, channels);
-            saveImage(img, "DecompressedImage.png");
+            saveImage(img, "DecompressedImage.jpg");
         } catch (IOException | NumberFormatException e) {
             e.printStackTrace();
         }
@@ -50,20 +50,39 @@ public class vectorQuantizationDecompress {
 
     private BufferedImage reconstructImage(int width, int height, int channels) {
         BufferedImage reconstructedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        Thread[] threads = new Thread[tilesPerRow];
         for (int row = 0; row < tilesPerRow; row++) {
-            for (int col = 0; col < tilesPerColumn; col++) {
-                int index = decompressedIndices[row][col];
-                int[] tile = codeBook[index];
-                for (int i = 0; i < tileSize; i++) {
-                    for (int j = 0; j < tileSize; j++) {
-                        int idx = (i * tileSize + j) * channels;
-                        int r = tile[idx];
-                        int g = tile[idx + 1];
-                        int b = tile[idx + 2];
-                        int rgbVal = (r << 16) | (g << 8) | b;
-                        reconstructedImage.setRGB(col * tileSize + j, row * tileSize + i, rgbVal);
+            final int r = row;
+            threads[row] = new Thread(new Runnable() {
+                public void run() {
+                    for (int col = 0; col < tilesPerColumn; col++) {
+                        int index = decompressedIndices[r][col];
+                        int[] tile = codeBook[index];
+                        for (int i = 0; i < tileSize; i++) {
+                            for (int j = 0; j < tileSize; j++) {
+                                int x = col * tileSize + j;
+                                int y = r * tileSize + i;
+                                if (x < width && y < height) {
+                                    int idx = (i * tileSize + j) * channels;
+                                    int rVal = tile[idx];
+                                    int g = tile[idx + 1];
+                                    int b = tile[idx + 2];
+                                    int rgbVal = (rVal << 16) | (g << 8) | b;
+                                    reconstructedImage.setRGB(x, y, rgbVal);
+                                }
+                            }
+                        }
                     }
                 }
+            });
+            threads[row].start();
+        }
+        // Wait for all threads to finish
+        for (int row = 0; row < tilesPerRow; row++) {
+            try {
+                threads[row].join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
         System.out.println("Image reconstructed successfully.");
@@ -72,8 +91,8 @@ public class vectorQuantizationDecompress {
 
     private void saveImage(BufferedImage image, String path) {
         try {
-            ImageIO.write(image, "png", new File(path));
-            System.out.println("Decompressed image saved successfully to " + path);
+            ImageIO.write(image, "jpg", new File(path));
+            System.out.println("Decompressed image saved as JPEG to " + path);
         } catch (IOException e) {
             e.printStackTrace();
         }
