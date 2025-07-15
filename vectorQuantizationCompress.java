@@ -100,11 +100,26 @@ public class vectorQuantizationCompress {
         System.out.println("Codebook initialized with " + count + " vectors.");
     }
 
-    // Quantize the image using the closest codebook vector
+    // Quantize the image using the closest codebook vector (multithreaded per row)
     public void quantizeImage() {
+        Thread[] threads = new Thread[tilesPerRow];
         for (int row = 0; row < tilesPerRow; row++) {
-            for (int col = 0; col < tilesPerColumn; col++) {
-                compressedImage[row][col] = findClosestCodebookVector(tileGrid[row][col]);
+            final int r = row;
+            threads[row] = new Thread(new Runnable() {
+                public void run() {
+                    for (int col = 0; col < tilesPerColumn; col++) {
+                        compressedImage[r][col] = findClosestCodebookVector(tileGrid[r][col]);
+                    }
+                }
+            });
+            threads[row].start();
+        }
+        // Wait for all threads to finish
+        for (int row = 0; row < tilesPerRow; row++) {
+            try {
+                threads[row].join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
     }
